@@ -10,8 +10,6 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -27,10 +25,23 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->brandName('Dasbor Admin')
+            ->font('Poppins')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::hex('#475569'),    // Slate
+                'secondary' => Color::hex('#0ea5e9'),  // Sky blue
+                'tertiary' => Color::hex('#8b5cf6'),   // Purple
+                'success' => Color::hex('#15803d'),    // Green
+                'warning' => Color::hex('#eab308'),    // Yellow
+                'danger' => Color::hex('#be123c'),     // Rose red
+                'gray' => Color::hex('#6b7280'),       // Gray
+                'info' => Color::hex('#0d9488'),       // Teal
             ])
+             // ->colors([
+            //     'primary' => Color::Amber,
+            // ])
+            ->sidebarFullyCollapsibleOnDesktop()
+            ->spa()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
