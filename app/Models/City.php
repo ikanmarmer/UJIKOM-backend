@@ -11,8 +11,9 @@ class City extends Model
 
     protected $fillable = [
         'name',
-        'province', 
+        'province',
         'slug',
+        'image'
     ];
 
     public function hotels()

@@ -17,8 +17,16 @@ class Room extends Model
     ];
 
     protected $appends = [
-        'category_images'
+        'category_images',
+        'category_image_urls'
     ];
+
+    public function getCategoryImageUrlsAttribute()
+    {
+        return $this->roomCategory
+            ? $this->roomCategory->image_urls
+            : [];
+    }
 
     protected static function boot()
     {

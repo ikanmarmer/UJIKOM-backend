@@ -6,7 +6,6 @@ enum Role: string
 {
     case ADMIN = 'admin';
     case OWNER = 'owner';
-    // case MANAGER = 'manager';
     case RESEPSIONIS = 'resepsionis';
     case USER = 'user';
 
@@ -15,7 +14,6 @@ enum Role: string
         return match ($this) {
             self::ADMIN => 'Administrator',
             self::OWNER => 'Owner',
-            // self::MANAGER => 'Manager',
             self::RESEPSIONIS => 'Resepsionis',
             self::USER => 'User',
         };

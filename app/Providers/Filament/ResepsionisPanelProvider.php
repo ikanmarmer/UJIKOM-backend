@@ -26,14 +26,23 @@ class ResepsionisPanelProvider extends PanelProvider
         return $panel
             ->id('resepsionis')
             ->path('resepsionis')
+            ->login()
+            ->font('Poppins')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Blue,
             ])
+            ->sidebarFullyCollapsibleOnDesktop()
             ->spa()
+            ->navigationGroups([
+                'Manajemen Booking',
+                'Manajemen Hotel',
+                'Laporan',
+            ])
+            ->brandName('Resepsionis Panel')
             ->discoverResources(in: app_path('Filament/Resepsionis/Resources'), for: 'App\Filament\Resepsionis\Resources')
             ->discoverPages(in: app_path('Filament/Resepsionis/Pages'), for: 'App\Filament\Resepsionis\Pages')
             ->pages([
-                Dashboard::class,
+                //
             ])
             ->discoverWidgets(in: app_path('Filament/Resepsionis/Widgets'), for: 'App\Filament\Resepsionis\Widgets')
             ->widgets([
@@ -53,6 +62,6 @@ class ResepsionisPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])->viteTheme('resources/css/filament/admin/theme.css');
     }
 }

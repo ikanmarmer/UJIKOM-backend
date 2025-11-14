@@ -26,26 +26,24 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->brandName('Dasbor Admin')
+            ->login()
             ->font('Poppins')
             ->colors([
-                'primary' => Color::hex('#475569'),    // Slate
-                'secondary' => Color::hex('#0ea5e9'),  // Sky blue
-                'tertiary' => Color::hex('#8b5cf6'),   // Purple
-                'success' => Color::hex('#15803d'),    // Green
-                'warning' => Color::hex('#eab308'),    // Yellow
-                'danger' => Color::hex('#be123c'),     // Rose red
-                'gray' => Color::hex('#6b7280'),       // Gray
-                'info' => Color::hex('#0d9488'),       // Teal
+                'primary' => Color::Blue
             ])
-             // ->colors([
-            //     'primary' => Color::Amber,
-            // ])
-            ->sidebarFullyCollapsibleOnDesktop()
             ->spa()
+            ->sidebarFullyCollapsibleOnDesktop()
+            ->navigationGroups([
+                'Hotel Management',
+                'Booking Management',
+                'User Management',
+                'Content Management',
+                'Settings',
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Dashboard::class,
+                // 
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
@@ -64,6 +62,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])->viteTheme('resources/css/filament/admin/theme.css');
+            ])->viteTheme('resources/css/filament/admin/theme.css')
+        ;
     }
 }

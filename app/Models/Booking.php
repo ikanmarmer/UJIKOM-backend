@@ -56,7 +56,7 @@ class Booking extends Model
     public function rooms()
     {
         return $this->belongsToMany(Room::class, 'booking_room')
-            ->withPivot('check_in_date', 'check_out_date')
+        ->withPivot('check_in_date', 'check_out_date', 'guests_count') 
             ->withTimestamps();
     }
 

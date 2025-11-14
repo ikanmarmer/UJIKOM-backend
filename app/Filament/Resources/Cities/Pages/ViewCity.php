@@ -16,4 +16,10 @@ class ViewCity extends ViewRecord
             EditAction::make(),
         ];
     }
+
+    public function getHeading(): string
+    {
+        return 'Informasi Kota';
+    }
+
 }

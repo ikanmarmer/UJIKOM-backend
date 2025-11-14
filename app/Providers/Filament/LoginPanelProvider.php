@@ -28,25 +28,8 @@ class LoginPanelProvider extends PanelProvider
             ->authGuard('web')
             ->font('Poppins')
             ->colors([
-                'primary' => Color::hex('#475569'),    // Slate
-                'secondary' => Color::hex('#0ea5e9'),  // Sky blue
-                'tertiary' => Color::hex('#8b5cf6'),   // Purple
-                'success' => Color::hex('#15803d'),    // Green
-                'warning' => Color::hex('#eab308'),    // Yellow
-                'danger' => Color::hex('#be123c'),     // Rose red
-                'gray' => Color::hex('#6b7280'),       // Gray
-                'info' => Color::hex('#0d9488'),       // Teal
+                'primary' => Color::Blue
             ])
-            // ->discoverResources(in: app_path('Filament/Login/Resources'), for: 'App\Filament\Login\Resources')
-            // ->discoverPages(in: app_path('Filament/Login/Pages'), for: 'App\Filament\Login\Pages')
-            // ->pages([
-            //
-            // ])
-            // ->discoverWidgets(in: app_path('Filament/Login/Widgets'), for: 'App\Filament\Login\Widgets')
-            // ->widgets([
-            //
-            //
-            // ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -60,6 +43,6 @@ class LoginPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])->viteTheme('resources/css/filament/admin/theme.css');
+            ]);
     }
 }

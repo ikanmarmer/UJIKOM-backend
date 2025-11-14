@@ -67,7 +67,11 @@ class CityController extends Controller
             })
             ->with('city')
             ->limit(5)
-            ->get();
+            ->get()
+            ->map(function ($hotel) {
+                $hotel->city_slug = $hotel->city ? $hotel->city->slug : null;
+                return $hotel;
+            });
 
         return response()->json([
             'success' => true,

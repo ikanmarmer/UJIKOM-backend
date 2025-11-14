@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
             AmenitySeeder::class,
             HotelSeeder::class,
             RoomCategorySeeder::class,
-            // RoomSeeder::class,
+            RoomSeeder::class,
             PivotAmenitySeeder::class,
         ]);
     }

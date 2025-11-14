@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Role;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('role')->default('user');
+            $table->string('role')->default(Role::USER->value);
             $table->string('phone')->nullable();
             $table->string('google_id')->nullable()->unique();
             $table->string('avatar')->nullable();
@@ -23,7 +24,7 @@ return new class extends Migration
             $table->timestamp('verification_code_expires_at')->nullable();
             $table->boolean('is_verified')->default(false);
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('password')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

@@ -11,7 +11,6 @@ class Amenity extends Model
 
     protected $fillable = [
         'name',
-        // 'icon',
     ];
 
     public function hotels()

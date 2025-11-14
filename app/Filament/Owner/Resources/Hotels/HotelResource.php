@@ -11,6 +11,7 @@ use App\Filament\Owner\Resources\Hotels\Schemas\HotelInfolist;
 use App\Filament\Owner\Resources\Hotels\Tables\HotelsTable;
 use App\Models\Hotel;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -20,7 +21,21 @@ class HotelResource extends Resource
 {
     protected static ?string $model = Hotel::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
+    protected static ?string $navigationLabel = 'Hotel';
+    protected static string|UnitEnum|null $navigationGroup = 'Manajemen Hotel';
+    protected static ?int $navigationSort = 1;
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->where('owner_id', auth()->id());
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('owner_id', auth()->id())->count();
+    }
 
     public static function form(Schema $schema): Schema
     {

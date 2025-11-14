@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -234,6 +233,7 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         $user = $request->user();
+        $user->has_password = !is_null($user->password);
 
         // Add full avatar URL if exists
         if ($user->avatar && !filter_var($user->avatar, FILTER_VALIDATE_URL)) {
@@ -253,29 +253,46 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        $validator = Validator::make($request->all(), [
+        // Base validation rules
+        $rules = [
             'name' => 'sometimes|string|max:255',
             'phone' => 'sometimes|nullable|string|max:20',
             'avatar' => 'sometimes|nullable|image|mimes:jpg,jpeg,png|max:2048',
-        ]);
+        ];
+
+        // Password validation based on user type
+        if ($user->google_id && !$user->password) {
+            // Google user setting password for first time (optional)
+            $rules['password'] = 'sometimes|nullable|string|min:8|confirmed';
+        } else {
+            // Regular user changing password (requires current password)
+            $rules['current_password'] = 'required_with:password|string';
+            $rules['password'] = 'sometimes|nullable|string|min:8|confirmed';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
+                'message' => 'Validation failed',
                 'errors' => $validator->errors()
             ], 422);
         }
 
         $data = [];
 
+        // Update name
         if ($request->has('name')) {
             $data['name'] = $request->name;
         }
 
+        // Update phone
         if ($request->has('phone')) {
             $data['phone'] = $request->phone;
         }
 
+        // Update avatar
         if ($request->hasFile('avatar')) {
             // Delete old avatar if exists and not from Google
             if ($user->avatar && !filter_var($user->avatar, FILTER_VALIDATE_URL)) {
@@ -287,7 +304,39 @@ class AuthController extends Controller
             $data['avatar'] = $avatarPath;
         }
 
+        // Handle password update
+        if ($request->filled('password')) {
+            // Google user setting password for first time
+            if ($user->google_id && !$user->password) {
+                $data['password'] = Hash::make($request->password);
+            }
+            // Regular user changing password
+            else {
+                // Verify current password
+                if (!$request->filled('current_password')) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Current password is required to change password'
+                    ], 422);
+                }
+
+                if (!Hash::check($request->current_password, $user->password)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Current password is incorrect'
+                    ], 422);
+                }
+
+                $data['password'] = Hash::make($request->password);
+            }
+        }
+
+        // Update user
         $user->update($data);
+        $user->refresh();
+
+        // Add has_password flag
+        $user->has_password = !is_null($user->password) && !empty($user->password);
 
         // Add full avatar URL
         if ($user->avatar && !filter_var($user->avatar, FILTER_VALIDATE_URL)) {
@@ -296,9 +345,19 @@ class AuthController extends Controller
             $user->avatar_url = $user->avatar;
         }
 
+        // Custom success message based on what was updated
+        $message = 'Profile updated successfully';
+        if ($request->filled('password')) {
+            if ($user->google_id && !$user->getOriginal('password')) {
+                $message = 'Password set successfully! You can now login with email and password.';
+            } else {
+                $message = 'Password changed successfully!';
+            }
+        }
+
         return response()->json([
             'success' => true,
-            'message' => 'Profile updated successfully.',
+            'message' => $message,
             'data' => $user
         ], 200);
     }
@@ -380,7 +439,6 @@ class AuthController extends Controller
                     'role' => 'user',
                     'is_verified' => true,
                     'email_verified_at' => Carbon::now(),
-                    'password' => Hash::make(Str::random(24)),
                 ]);
             }
 

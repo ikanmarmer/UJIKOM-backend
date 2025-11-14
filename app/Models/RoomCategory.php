@@ -29,7 +29,8 @@ class RoomCategory extends Model
     ];
 
     protected $appends = [
-        'first_image_url',
+        'image_urls',
+        'thumbnail',
         'available_rooms_count' // Accessor untuk available rooms
     ];
 
@@ -37,6 +38,63 @@ class RoomCategory extends Model
     public function getAvailableRoomsCountAttribute()
     {
         return $this->rooms()->where('status', 'available')->count();
+    }
+
+    /**
+     * Accessor untuk image URLs
+     * Sama seperti Hotel model untuk konsistensi
+     */
+    public function getImageUrlsAttribute()
+    {
+        $images = $this->attributes['images'] ?? null;
+        
+        // Jika tidak ada images, return empty array
+        if (!$images) {
+            return [];
+        }
+        
+        // Jika string, coba decode JSON
+        if (is_string($images)) {
+            // Cek apakah ini JSON array
+            if (str_starts_with($images, '[')) {
+                $decoded = json_decode($images, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $images = $decoded;
+                } else {
+                    // Jika JSON decode gagal, treat sebagai single image path
+                    $images = [$images];
+                }
+            } else {
+                // Single image path
+                $images = [$images];
+            }
+        }
+        
+        // Jika bukan array atau array kosong, return empty
+        if (!is_array($images) || empty($images)) {
+            return [];
+        }
+
+        // Filter dan map images
+        return array_values(array_filter(array_map(function ($image) {
+            // Skip jika null atau empty
+            if (empty($image)) {
+                return null;
+            }
+            
+            // Jika sudah URL lengkap, return as is
+            if (filter_var($image, FILTER_VALIDATE_URL)) {
+                return $image;
+            }
+            
+            // Cek apakah file exists di storage
+            if (\Storage::disk('public')->exists($image)) {
+                return asset('storage/' . $image);
+            }
+            
+            // Jika file tidak ada, return null (akan difilter)
+            return null;
+        }, $images)));
     }
 
     public function hotel()
@@ -60,10 +118,13 @@ class RoomCategory extends Model
         return $this->hasMany(Booking::class);
     }
 
-    // Accessor untuk mendapatkan first image
-    public function getFirstImageUrlAttribute()
+    /**
+     * Accessor untuk thumbnail (image pertama)
+     */
+    public function getThumbnailAttribute()
     {
-        return $this->images && count($this->images) > 0 ? $this->images[0] : null;
+        $urls = $this->image_urls;
+        return $urls[0] ?? null;
     }
 
     // Method untuk sync total_rooms

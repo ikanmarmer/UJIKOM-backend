@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
         ]);
+
+        $middleware->alias([
+            'token.from.query' => \App\Http\Middleware\TokenFromQuery::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

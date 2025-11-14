@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ReviewStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -86,40 +87,86 @@ class Hotel extends Model
             ->withTimestamps();
     }
 
-    // Accessor untuk image URLs
+    /**
+     * Accessor untuk image URLs
+     * Menangani berbagai format data images dan memberikan fallback
+     */
     public function getImageUrlsAttribute()
     {
-        if (!$this->images || !is_array($this->images)) {
-            return [asset('images/placeholder-hotel.jpg')];
+        $images = $this->attributes['images'] ?? null;
+
+        // Jika tidak ada images, return empty array (frontend akan handle fallback)
+        if (!$images) {
+            return [];
         }
 
-        return array_map(function ($image) {
-            // Jika sudah full URL (http/https)
+        // Jika string, coba decode JSON
+        if (is_string($images)) {
+            // Cek apakah ini JSON array
+            if (str_starts_with($images, '[')) {
+                $decoded = json_decode($images, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $images = $decoded;
+                } else {
+                    // Jika JSON decode gagal, treat sebagai single image path
+                    $images = [$images];
+                }
+            } else {
+                // Single image path
+                $images = [$images];
+            }
+        }
+
+        // Jika bukan array atau array kosong, return empty
+        if (!is_array($images) || empty($images)) {
+            return [];
+        }
+
+        // Filter dan map images
+        return array_values(array_filter(array_map(function ($image) {
+            // Skip jika null atau empty
+            if (empty($image)) {
+                return null;
+            }
+
+            // Jika sudah URL lengkap, return as is
             if (filter_var($image, FILTER_VALIDATE_URL)) {
                 return $image;
             }
 
-            // Jika path storage
+            // Cek apakah file exists di storage
             if (Storage::disk('public')->exists($image)) {
-                return Storage::url($image);
+                return asset('storage/' . $image);
             }
 
-            // Jika path public
-            return asset($image);
-        }, $this->images);
+            // Jika file tidak ada, return null (akan difilter)
+            return null;
+        }, $images)));
     }
 
-    // Accessor untuk thumbnail (image pertama)
+    /**
+     * Accessor untuk thumbnail (image pertama)
+     * Tidak perlu fallback di sini, frontend akan handle
+     */
     public function getThumbnailAttribute()
     {
         $urls = $this->image_urls;
-        return $urls[0] ?? asset('images/placeholder-hotel.jpg');
+        return $urls[0] ?? null;
     }
 
     public function updateRating()
     {
-        $this->average_rating = $this->reviews()->avg('rating') ?? 0;
-        $this->total_reviews = $this->reviews()->count();
+        // Lebih efisien karena langsung query ke database
+        $stats = $this->reviews()
+            ->where('status', ReviewStatus::APPROVED)
+            ->selectRaw('AVG(rating) as avg_rating, COUNT(*) as total')
+            ->first();
+
+        if ($stats->avg_rating !== null) {
+            $this->attributes['average_rating'] = number_format((float) $stats->avg_rating, 1, '.', '');
+        }
+
+        $this->total_reviews = $stats->total ?? 0;
         $this->save();
     }
 }

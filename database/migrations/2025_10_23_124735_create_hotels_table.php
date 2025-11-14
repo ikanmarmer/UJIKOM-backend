@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->foreignId('city_id')->constrained()->onDelete('cascade');
             $table->foreignId('owner_id')->constrained('users')->onDelete('cascade');
             $table->string('name');
+            $table->string('description')->nullable();
             $table->string('slug')->unique();
             $table->integer('star_rating')->default(3);
             $table->string('address');

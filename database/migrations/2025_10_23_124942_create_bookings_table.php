@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->date('check_out_date');
             $table->integer('nights');
             $table->integer('number_of_rooms');
-            $table->integer('guests_per_room');
+            $table->string('guests_per_room');
             $table->integer('total_guests');
             $table->decimal('price_per_night', 10, 2);
             $table->decimal('total_price', 10, 2);
